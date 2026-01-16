@@ -35,12 +35,6 @@ export const Interface = ({
       className="w-[450px] bg-white h-full shadow-2xl absolute right-0 top-0 overflow-y-auto overflow-x-hidden z-10 font-sans text-gray-800"
     >
       <div className="p-8 space-y-8">
-        {/* ... Header, Inputs, etc. REMAIN THE SAME ... */}
-        {/* I need to make sure I don't delete the content I'm not seeing here. 
-            The simplest way is to KEEP the content but REMOVE the AnimatePresence block at the end. */}
-        
-        {/* ... (Previous content implied preserved by range selection) ... */}
-        {/* Retaining Header through Button */}
         <div className="flex justify-between items-start">
              <div>
                <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Configuration</span>

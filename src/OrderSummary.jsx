@@ -40,17 +40,9 @@ export const OrderSummary = ({
     
     yPos += 10
     doc.setFontSize(11)
+    doc.setFontSize(11)
     doc.setFont("helvetica", "normal")
 
-    const specs = [
-      { label: "Straw Type", value: config.strawType },
-      { label: "Color (Hex)", value: config.config }, // Fix: variable is config.color not config.config
-      { label: "End Type", value: config.endType },
-      { label: "Wrapping", value: config.wrapped },
-      { label: "Dimensions", value: `${config.length}mm (L) x ${config.diameter} (D)` },
-    ]
-
-    // Correction for the variable access in the loop below
     const data = [
       ["Straw Type", config.strawType],
       ["Color", config.color.toUpperCase()],
