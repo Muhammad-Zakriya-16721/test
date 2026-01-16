@@ -1,188 +1,301 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, Download, X } from 'lucide-react'
-import jsPDF from 'jspdf'
+import { X, Check, FileDown, Edit3 } from 'lucide-react'
+import { jsPDF } from 'jspdf'
 
-export const OrderSummary = ({
-  config,
-  isOpen,
-  onClose,
-  onConfirm
-}) => {
-  const totalQty = (Number(config.qtyPerBox) || 0) * (Number(config.boxesPerCarton) || 0)
+export default function OrderSummary({ isOpen, onClose, onConfirm, data }) {
+   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleDownload = () => {
-    const doc = new jsPDF()
-    const pageWidth = doc.internal.pageSize.getWidth()
-    const pageHeight = doc.internal.pageSize.getHeight()
-    const margin = 20
+   // Reset success state when modal opens
+   useEffect(() => {
+      if (isOpen) setIsSuccess(false);
+   }, [isOpen]);
 
-    // -- Header --
-    doc.setFontSize(22)
-    doc.setFont("helvetica", "bold")
-    doc.text("STRAW CONFIGURATION ORDER", margin, 30)
+   if (!isOpen || !data) return null;
 
-    doc.setFontSize(10)
-    doc.setFont("helvetica", "normal")
-    doc.setTextColor(100)
-    doc.text(`Date: ${new Date().toLocaleDateString()}  |  Time: ${new Date().toLocaleTimeString()}`, margin, 38)
-    
-    // -- Divider Line --
-    doc.setDrawColor(200)
-    doc.line(margin, 45, pageWidth - margin, 45)
+   const {
+      color, strawType, endType, length, diameter, wrapperType,
+      numMasterCartons, qtyPerInnerBox, innerBoxesPerCarton, totalQty, comments
+   } = data;
 
-    // -- Section Title: Specifications --
-    let yPos = 60
-    doc.setFontSize(14)
-    doc.setTextColor(0) // Black
-    doc.setFont("helvetica", "bold")
-    doc.text("Product Specifications", margin, yPos)
-    
-    yPos += 10
-    doc.setFontSize(11)
-    doc.setFontSize(11)
-    doc.setFont("helvetica", "normal")
+   // Format numbers for display
+   const fmt = (n) => new Intl.NumberFormat('en-US').format(n);
 
-    const data = [
-      ["Straw Type", config.strawType],
-      ["Color", config.color.toUpperCase()],
-      ["End Type", config.endType],
-      ["Wrapping", config.wrapped],
-      ["Dimensions", `${config.length}mm x ${config.diameter}`]
-    ]
+   const handleConfirmAction = () => {
+      setIsSuccess(true);
+      // Wait for animation then confirm and clear
+      setTimeout(() => {
+         onConfirm();
+      }, 2000);
+   };
 
-    data.forEach(([label, value]) => {
-      doc.setFont("helvetica", "bold")
-      doc.text(`${label}:`, margin, yPos)
-      doc.setFont("helvetica", "normal")
-      doc.text(value, margin + 40, yPos)
-      yPos += 8
-    })
+   const handleDownloadPDF = () => {
+      const doc = new jsPDF();
 
-    // -- Section Title: Order Details --
-    yPos += 10
-    doc.setFontSize(14)
-    doc.setFont("helvetica", "bold")
-    doc.text("Order Quantity", margin, yPos)
+      // --- PDF STYLING ---
+      const lineHeight = 10;
+      let y = 20;
 
-    yPos += 10
-    doc.setFontSize(11)
-    
-    const qtyData = [
-      ["Qty Per Inner Box", config.qtyPerBox.toString()],
-      ["Inner Boxes/Carton", config.boxesPerCarton.toString()],
-    ]
+      // Header
+      doc.setFontSize(22);
+      doc.setFont('helvetica', 'bold');
+      doc.text("Straw Order Configuration", 20, y);
+      y += 15;
 
-    qtyData.forEach(([label, value]) => {
-      doc.setFont("helvetica", "bold")
-      doc.text(`${label}:`, margin, yPos)
-      doc.setFont("helvetica", "normal")
-      doc.text(value, margin + 45, yPos)
-      yPos += 8
-    })
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, y);
+      y += 20;
 
-    // -- Total Highlight --
-    yPos += 5
-    doc.setFillColor(245, 245, 245) // Light gray background
-    doc.roundedRect(margin, yPos - 5, pageWidth - (margin * 2), 16, 2, 2, 'F')
-    
-    doc.setFont("helvetica", "bold")
-    doc.setFontSize(12)
-    doc.text("TOTAL ORDER QUANTITY:", margin + 5, yPos + 6)
-    doc.text(`${totalQty.toLocaleString()} STRAWS`, pageWidth - margin - 5, yPos + 6, { align: "right" })
+      // Section: Product Details
+      doc.setFillColor(240, 240, 240);
+      doc.rect(20, y - 6, 170, 10, 'F');
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text("Product Details", 25, y);
+      y += 15;
 
-    // -- Comments --
-    if (config.comments) {
-      yPos += 25
-      doc.setFontSize(14)
-      doc.setTextColor(0)
-      doc.text("Additional Comments", margin, yPos)
-      
-      yPos += 8
-      doc.setFontSize(10)
-      doc.setFont("helvetica", "italic")
-      doc.setTextColor(60)
-      
-      const splitComments = doc.splitTextToSize(config.comments, pageWidth - (margin * 2))
-      doc.text(splitComments, margin, yPos)
-    }
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
 
-    // -- Footer --
-    doc.setFontSize(8)
-    doc.setTextColor(150)
-    doc.text("Generated by 3D Straw Configurator", pageWidth / 2, pageHeight - 10, { align: "center" })
+      const details = [
+         [`Color`, color],
+         [`Straw Type`, strawType],
+         [`End Type`, endType],
+         [`Length`, `${length} mm`],
+         [`Diameter`, `${diameter} mm`],
+         [`Wrapper`, wrapperType],
+      ];
 
-    doc.save(`straw-order-${Date.now()}.pdf`)
-  }
+      details.forEach(([label, value]) => {
+         doc.setFont('helvetica', 'bold');
+         doc.text(`${label}:`, 30, y);
+         doc.setFont('helvetica', 'normal');
+         doc.text(`${value}`, 80, y);
+         y += lineHeight;
+      });
 
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-          onClick={onClose}
-        >
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }} 
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white rounded-lg shadow-2xl max-w-md w-full overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-             <div className="p-8">
-                <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                   <Check className="w-8 h-8 text-green-600" />
-                </div>
-                
-                <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">Order Summary</h2>
+      if (comments) {
+         y += 5;
+         doc.setFont('helvetica', 'bold');
+         doc.text("Comments:", 30, y);
+         y += 7;
+         doc.setFont('helvetica', 'normal');
+         // Split text to fit width
+         const splitComments = doc.splitTextToSize(comments, 150);
+         doc.text(splitComments, 30, y);
+         y += (splitComments.length * 7) + 5;
+      }
 
-                <div className="space-y-3 text-sm text-gray-600 bg-gray-50 p-6 rounded-lg mb-6">
-                   <div className="flex justify-between"><span>Type:</span> <span className="font-bold text-gray-900">{config.strawType}</span></div>
-                   <div className="flex justify-between"><span>Color:</span> <span className="font-bold text-gray-900 truncate max-w-[150px]">{config.color}</span></div>
-                   <div className="flex justify-between"><span>Wrapped:</span> <span className="font-bold text-gray-900">{config.wrapped}</span></div>
-                   <div className="flex justify-between"><span>Size:</span> <span className="font-bold text-gray-900">{config.length}mm x {config.diameter}</span></div>
-                   <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
-                      <span>Total Quantity:</span> 
-                      <span className="font-bold text-gray-900 text-base">{totalQty.toLocaleString()}</span>
-                   </div>
-                   {config.comments && (
-                      <div className="pt-2 border-t border-gray-200 mt-2">
-                         <span className="block text-xs font-bold mb-1 text-gray-500">Comments:</span>
-                         <p className="text-xs italic text-gray-700">{config.comments}</p>
-                      </div>
-                   )}
-                </div>
+      y += 10;
 
-                <div className="space-y-3">
-                   <button 
-                      onClick={onConfirm}
-                      className="w-full py-4 bg-black text-white font-bold uppercase tracking-wider rounded hover:bg-gray-800 shadow-lg transition-all flex items-center justify-center gap-2"
-                   >
-                      Confirm & Reset
-                   </button>
-                   
-                   <div className="grid grid-cols-2 gap-3">
-                      <button 
-                         onClick={handleDownload}
-                         className="py-3 px-4 border border-gray-200 rounded font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors flex items-center justify-center gap-2 text-sm"
-                      >
-                         <Download size={16} /> Download PDF
-                      </button>
-                      <button 
-                         onClick={onClose}
-                         className="py-3 px-4 border border-gray-200 rounded font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors text-sm"
-                      >
-                         Close
-                      </button>
-                   </div>
-                </div>
-             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
+      // Section: Quantity Breakdown
+      doc.setFillColor(240, 240, 240);
+      doc.rect(20, y - 6, 170, 10, 'F');
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text("Quantity Breakdown", 25, y);
+      y += 15;
+
+      const quantities = [
+         [`Master Cartons`, fmt(numMasterCartons)],
+         [`Inner Boxes / Carton`, fmt(innerBoxesPerCarton)],
+         [`Qty / Inner Box`, fmt(qtyPerInnerBox)],
+      ];
+
+      doc.setFontSize(11);
+      quantities.forEach(([label, value]) => {
+         doc.text(`${label}:`, 30, y);
+         doc.text(`${value}`, 150, y, { align: 'right' });
+         y += lineHeight;
+      });
+
+      // Total Line
+      y += 5;
+      doc.setLineWidth(0.5);
+      doc.line(30, y, 180, y);
+      y += 10;
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text("Total Quantity:", 30, y);
+      doc.text(`${fmt(totalQty)} Straws`, 180, y, { align: 'right' });
+
+      // Footer
+      y = 280;
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.text("Generated by B2B Straw Configurator", 105, y, { align: 'center' });
+
+      doc.save('straw-order-config.pdf');
+   };
+
+   return (
+      <AnimatePresence>
+         {isOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+               {/* Backdrop */}
+               <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={onClose}
+                  className="absolute inset-0 bg-black/40 backdrop-blur-md"
+               />
+
+               {/* Modal Card */}
+               <motion.div
+                  initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                  className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+               >
+                  {/* Header */}
+                  <div className="bg-gray-50 border-b p-6 flex items-center justify-between">
+                     <div>
+                        <h2 className="text-2xl font-bold text-gray-900">Review Your Order</h2>
+                        <p className="text-sm text-gray-500">Please verify standard configuration before exporting.</p>
+                     </div>
+                     <button
+                        onClick={onClose}
+                        className="p-2 rounded-full hover:bg-gray-200 text-gray-500 transition-colors"
+                     >
+                        <X size={24} />
+                     </button>
+                  </div>
+
+                  {/* Content - Scrollable */}
+                  <div className="p-8 overflow-y-auto custom-scrollbar space-y-8">
+
+                     {/* 2-Column Grid */}
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                        {/* Config Details */}
+                        <div className="space-y-4">
+                           <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2 border-b pb-1">Specifications</h3>
+                           <div className="space-y-3">
+                              <Row label="Straw Type" value={strawType} />
+                              <Row label="End Type" value={endType} />
+                              <Row label="Dimensions" value={`${length}mm x ${diameter}mm`} />
+
+                              <div className="flex justify-between items-center py-1">
+                                 <span className="text-sm text-gray-600 font-medium">Color</span>
+                                 <div className="flex items-center gap-2">
+                                    <span className="text-sm font-bold text-gray-900">{color}</span>
+                                    <div className="w-4 h-4 rounded-full border border-gray-200 shadow-sm" style={{ backgroundColor: color }} />
+                                 </div>
+                              </div>
+
+                              <Row label="Wrapper" value={wrapperType} highlight={wrapperType !== 'Unwrapped'} />
+                           </div>
+
+                           {comments && (
+                              <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-100 text-sm text-yellow-800">
+                                 <span className="font-bold block mb-1 text-xs uppercase opacity-70">Comments</span>
+                                 "{comments}"
+                              </div>
+                           )}
+                        </div>
+
+                        {/* Quantity Breakdown */}
+                        <div className="space-y-4">
+                           <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2 border-b pb-1">Volume</h3>
+                           <div className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                              <Row label="Master Cartons" value={fmt(numMasterCartons)} bold />
+                              <Row label="Inner Boxes / Ctn" value={fmt(innerBoxesPerCarton)} />
+                              <Row label="Qty / Inner Box" value={fmt(qtyPerInnerBox)} />
+
+                              <div className="border-t border-gray-200 my-2 pt-2 flex justify-between items-baseline">
+                                 <span className="text-sm font-bold text-gray-600">Total Quantity</span>
+                                 <span className="text-2xl font-extrabold text-blue-600">{fmt(totalQty)}</span>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+
+                  </div>
+
+                  {/* Footer Actions */}
+                  <div className={`p-6 border-t bg-gray-50 flex flex-col sm:flex-row gap-3 justify-end transition-opacity duration-300 ${isSuccess ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+
+                     <button
+                        onClick={onClose}
+                        className="px-6 py-3 rounded-xl border border-gray-300 font-bold text-gray-700 hover:bg-white hover:border-gray-400 transition-all flex items-center justify-center gap-2"
+                     >
+                        <Edit3 size={18} />
+                        Edit Config
+                     </button>
+
+                     <button
+                        onClick={handleDownloadPDF}
+                        className="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg hover:bg-blue-700 hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-2"
+                     >
+                        <FileDown size={20} />
+                        Download PDF
+                     </button>
+
+                     <button
+                        onClick={handleConfirmAction}
+                        className="px-6 py-3 rounded-xl bg-green-600 text-white font-bold shadow-lg hover:bg-green-700 hover:shadow-green-500/30 transition-all flex items-center justify-center gap-2"
+                     >
+                        <Check size={20} />
+                        Confirm & Clear
+                     </button>
+                  </div>
+
+                  {/* Success Overlay */}
+                  <AnimatePresence>
+                     {isSuccess && (
+                        <motion.div
+                           initial={{ opacity: 0 }}
+                           animate={{ opacity: 1 }}
+                           className="absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center"
+                        >
+                           <motion.div
+                              initial={{ scale: 0, rotate: -45 }}
+                              animate={{ scale: 1, rotate: 0 }}
+                              transition={{
+                                 type: "spring",
+                                 stiffness: 260,
+                                 damping: 20,
+                                 delay: 0.1
+                              }}
+                              className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-green-500/40 mb-6"
+                           >
+                              <Check size={48} strokeWidth={4} />
+                           </motion.div>
+                           <motion.h3
+                              initial={{ y: 20, opacity: 0 }}
+                              animate={{ y: 0, opacity: 1 }}
+                              transition={{ delay: 0.3 }}
+                              className="text-2xl font-black text-gray-900"
+                           >
+                              Order Confirmed!
+                           </motion.h3>
+                           <motion.p
+                              initial={{ y: 10, opacity: 0 }}
+                              animate={{ y: 0, opacity: 1 }}
+                              transition={{ delay: 0.4 }}
+                              className="text-gray-500 mt-2"
+                           >
+                              Clearing configuration...
+                           </motion.p>
+                        </motion.div>
+                     )}
+                  </AnimatePresence>
+
+
+               </motion.div>
+            </div>
+         )}
+      </AnimatePresence>
+   )
 }
+
+const Row = ({ label, value, bold = false, highlight = false }) => (
+   <div className="flex justify-between items-center py-1">
+      <span className="text-sm text-gray-600 font-medium">{label}</span>
+      <span className={`text-sm ${bold ? 'font-bold text-gray-900' : 'text-gray-900'} ${highlight ? 'text-blue-600 font-bold' : ''}`}>
+         {value}
+      </span>
+   </div>
+)

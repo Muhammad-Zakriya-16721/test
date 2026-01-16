@@ -1,88 +1,117 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Experience } from './Experience'
-import { Interface } from './Interface'
-import { OrderSummary } from './OrderSummary'
+import Experience from './Experience'
+import Interface from './Interface'
+import OrderSummary from './OrderSummary'
+
+const STORAGE_KEY = 'straw_config_data'
 
 function App() {
-  const canvasRef = useRef()
+  const [showSummary, setShowSummary] = useState(false)
 
+  // Global State
   const [config, setConfig] = useState(() => {
-    // Load from localStorage or use defaults
-    const saved = localStorage.getItem('strawConfig')
-    return saved ? JSON.parse(saved) : {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch (e) {
+        console.error("Error loading saved config", e)
+      }
+    }
+    return {
       color: '#FF0000',
-      strawType: 'Flexible', 
-      endType: 'Flat',       
-      length: 300,           
-      diameter: '12mm',      
-      qtyPerBox: '',  // Empty by default
-      boxesPerCarton: '', // Empty by default
-      wrapped: 'Unwrapped',
-      comments: ''
+      strawType: 'Flexible',
+      endType: 'Standard',
+      length: 300,
+      diameter: '12',
+      wrapperType: 'Unwrapped',
+      comments: '',
+      numMasterCartons: '',
+      qtyPerInnerBox: '',
+      innerBoxesPerCarton: ''
     }
   })
 
-  // Save to localStorage whenever config changes
+  // Persistence logic - Save to localStorage on changes
   useEffect(() => {
-    localStorage.setItem('strawConfig', JSON.stringify(config))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
   }, [config])
 
-  const [showSummary, setShowSummary] = useState(false)
+  // Snapshot Ref
+  const experienceRef = useRef()
 
-  const resetConfig = () => {
-    const defaults = {
-      color: '#FF0000',
-      strawType: 'Flexible', 
-      endType: 'Flat',       
-      length: 300,           
-      diameter: '12mm',      
-      qtyPerBox: '',
-      boxesPerCarton: '',
-      wrapped: 'Unwrapped',
-      comments: ''
+  const handleSnapshot = () => {
+    if (experienceRef.current) {
+      experienceRef.current.takeSnapshot()
     }
-    setConfig(defaults)
-    localStorage.removeItem('strawConfig')
+  }
+
+  // --- Order Summary Handlers ---
+  const handleReviewOrder = () => {
+    setShowSummary(true)
+  }
+
+  const handleCloseSummary = () => {
     setShowSummary(false)
   }
 
-  const handleSnapshot = () => {
-    if (canvasRef.current) {
-      const canvas = canvasRef.current
-      const link = document.createElement('a')
-      link.setAttribute('download', 'straw-design.png')
-      link.setAttribute('href', canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream'))
-      link.click()
+  const handleConfirmOrder = () => {
+    // Reset to defaults
+    const defaults = {
+      color: '#FF0000',
+      strawType: 'Flexible',
+      endType: 'Standard',
+      length: 300,
+      diameter: '12',
+      wrapperType: 'Unwrapped',
+      comments: '',
+      numMasterCartons: '',
+      qtyPerInnerBox: '',
+      innerBoxesPerCarton: ''
     }
+    setConfig(defaults)
+    localStorage.removeItem(STORAGE_KEY)
+    setShowSummary(false)
   }
 
-  return (
-    <div className="flex w-full h-screen overflow-hidden bg-white select-none relative">
-      <h1 className="absolute top-8 left-8 text-3xl font-bold z-10 text-gray-900 tracking-tight">
-        3D Configurator
-      </h1>
+  // Calculate totalQty for the summary
+  const totalQty = (config.numMasterCartons || 0) * (config.qtyPerInnerBox || 0) * (config.innerBoxesPerCarton || 0);
 
-      <div className="flex-1 h-full relative cursor-move">
-        <Experience 
-          color={config.color} 
-          strawType={config.strawType} 
-          canvasRef={canvasRef}
+  return (
+    <div className="w-full h-screen flex bg-white overflow-hidden">
+
+      {/* Left: 3D Experience Area */}
+      <div className="flex-1 h-full relative cursor-grab active:cursor-grabbing bg-gradient-to-b from-white to-gray-200">
+
+        {/* Noise Overlay for Background Texture (Concrete/Plaster Effect) */}
+        <div className="absolute inset-0 opacity-[0.4] pointer-events-none mix-blend-overlay z-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.01' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.7'/%3E%3C/svg%3E")`,
+            filter: 'contrast(120%) brightness(105%)'
+          }}
+        />
+
+        <Experience config={config} onSnapshotRef={experienceRef} />
+      </div>
+
+      {/* Right: Sidebar Interface (Fixed Width) */}
+      <div className="w-[400px] h-full relative z-10">
+        <Interface
+          config={config}
+          setConfig={setConfig}
+          onSnapshot={handleSnapshot}
+          onReviewOrder={handleReviewOrder}
         />
       </div>
 
-      <Interface 
-        config={config} 
-        setConfig={setConfig} 
-        onSnapshot={handleSnapshot}
-        onAddToQuote={() => setShowSummary(true)}
+      {/* Order Summary Modal */}
+      <OrderSummary
+        isOpen={showSummary}
+        onClose={handleCloseSummary}
+        onConfirm={handleConfirmOrder}
+        data={{ ...config, totalQty }}
       />
 
-      <OrderSummary 
-        config={config}
-        isOpen={showSummary}
-        onClose={() => setShowSummary(false)}
-        onConfirm={resetConfig}
-      />
     </div>
   )
 }
