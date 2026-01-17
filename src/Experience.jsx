@@ -133,6 +133,7 @@ const Scene = forwardRef(({ config }, ref) => {
           <StrawModel
             color={config.color}
             strawType={config.strawType}
+            endType={config.endType}
             wrapperType={config.wrapperType}
             length={config.length}
             diameter={config.diameter}

@@ -113,18 +113,24 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
             <div className="space-y-3">
                <span className="text-sm font-semibold text-gray-700 block">Straw Type</span>
                <div className="grid grid-cols-2 gap-2" role="group" aria-label="Straw Type Selection">
-                  {['Straight', 'Flexible', 'Extra Flexible'].map((type) => (
-                     <button
-                        key={type}
-                        onClick={() => updateConfig('strawType', type)}
-                        className={`py-2 px-4 rounded-lg text-sm font-medium transition-all ${strawType === type
-                           ? 'bg-black text-white shadow-lg'
-                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                           } ${type === 'Extra Flexible' ? 'col-span-2' : ''}`}
-                     >
-                        {type.toUpperCase()}
-                     </button>
-                  ))}
+                  {['Straight', 'Flexible', 'Extra Flexible'].map((type) => {
+                     const isDisabled = endType === 'Scoop (Spoon)' && type !== 'Straight';
+                     return (
+                        <button
+                           key={type}
+                           disabled={isDisabled}
+                           onClick={() => updateConfig('strawType', type)}
+                           className={`py-2 px-4 rounded-lg text-sm font-medium transition-all ${strawType === type
+                              ? 'bg-black text-white shadow-lg'
+                              : isDisabled
+                                 ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              } ${type === 'Extra Flexible' ? 'col-span-2' : ''}`}
+                        >
+                           {type.toUpperCase()}
+                        </button>
+                     );
+                  })}
                </div>
             </div>
 
@@ -167,6 +173,9 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
                                  key={option}
                                  onClick={() => {
                                     updateConfig('endType', option);
+                                    if (option === 'Scoop (Spoon)') {
+                                       updateConfig('strawType', 'Straight');
+                                    }
                                     setIsEndTypeOpen(false);
                                  }}
                                  className={`p-3 text-sm cursor-pointer transition-colors ${endType === option
