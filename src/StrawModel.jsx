@@ -296,7 +296,7 @@ function ScoopFullModel({ color, wrapperType, paperMaterial, filmMaterial }) {
             castShadow
             receiveShadow
             scale={[0.027, 0.021, 0.027]}
-            rotation={[0, 0, 0]}
+            rotation={[0, -3, 0]}
             position={[0, -0.21, 0]}
          >
             <meshStandardMaterial
@@ -310,7 +310,7 @@ function ScoopFullModel({ color, wrapperType, paperMaterial, filmMaterial }) {
          {Wrapper && (
             <group
                scale={[0.027, 0.021, 0.027]}
-               rotation={[0, 0, 0]}
+               rotation={[0, -3, 0]}
                position={[0, -0.21, 0]}
             >
                {Wrapper}
