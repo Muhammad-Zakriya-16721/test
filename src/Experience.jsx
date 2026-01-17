@@ -1,9 +1,27 @@
 import { useRef, useImperativeHandle, forwardRef, useMemo, useState, useEffect } from 'react'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
-import { OrbitControls, Environment, ContactShadows, SoftShadows } from '@react-three/drei'
+import { OrbitControls, Environment, ContactShadows, SoftShadows, useTexture } from '@react-three/drei'
 import { StrawModel } from './StrawModel'
 import * as THREE from 'three'
 import { generateConcreteTexture } from './utils/textureUtils'
+
+
+function LogoOverlay(props) {
+  const texture = useTexture('logo.png')
+  return (
+    <mesh {...props} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* 4x2 Plane for roughly 2:1 aspect ratio logo */}
+      <planeGeometry args={[4, 2]} />
+      <meshStandardMaterial
+        map={texture}
+        transparent
+        alphaTest={0.5} // Ensure clean edges if transparent
+        roughness={0.8}
+        metalness={0.1}
+      />
+    </mesh>
+  )
+}
 
 const Scene = forwardRef(({ config }, ref) => {
   const { gl, scene, camera } = useThree()
@@ -168,6 +186,10 @@ const Scene = forwardRef(({ config }, ref) => {
             side={THREE.DoubleSide}
           />
         </mesh>
+
+        {/* Platform Logo */}
+        <LogoOverlay position={[0, -2.5 + 0.5 + 0.001, 0]} />
+
 
         {/* Grounding Contact Shadow */}
         <ContactShadows

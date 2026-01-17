@@ -40,7 +40,7 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
          initial={{ x: '100%' }}
          animate={{ x: 0 }}
          transition={{ type: 'spring', damping: 20 }}
-         className="h-full w-full bg-white shadow-2xl overflow-y-auto border-l border-gray-200 flex flex-col"
+         className="h-full w-full bg-white shadow-2xl overflow-y-auto border-t lg:border-t-0 lg:border-l border-gray-200 flex flex-col"
       >
          <div className="p-6 flex-1 space-y-8">
 
@@ -63,7 +63,7 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
             {/* Color Picker */}
             <div className="space-y-3">
                <div className="flex items-center justify-between">
-                  <label htmlFor="straw-color" className="text-sm font-semibold text-gray-700">Straw Color</label>
+                  <span className="text-sm font-semibold text-gray-700">Straw Color</span>
                   <span className="text-xs font-mono text-gray-400 bg-gray-50 px-2 py-1 rounded border border-gray-100 uppercase tracking-wider">{color}</span>
                </div>
 
@@ -130,7 +130,7 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
 
             {/* End Type */}
             <div className="space-y-3">
-               <label htmlFor="end-type" className="text-sm font-semibold text-gray-700 uppercase tracking-tight">End Type</label>
+               <span className="text-sm font-semibold text-gray-700 uppercase tracking-tight block">End Type</span>
                <div className="relative">
                   <div
                      id="end-type"

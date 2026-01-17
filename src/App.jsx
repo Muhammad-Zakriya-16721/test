@@ -78,10 +78,11 @@ function App() {
   const totalQty = (config.numMasterCartons || 0) * (config.qtyPerInnerBox || 0) * (config.innerBoxesPerCarton || 0);
 
   return (
-    <div className="w-full h-screen flex bg-white overflow-hidden">
+    <div className="w-full flex flex-col lg:flex-row bg-white overflow-hidden" style={{ height: '100dvh' }}>
 
       {/* Left: 3D Experience Area */}
-      <div className="flex-1 h-full relative cursor-grab active:cursor-grabbing bg-gradient-to-b from-white to-gray-200">
+      {/* Mobile: Top 45% of screen. Desktop: Full height, flexible width */}
+      <div className="w-full lg:w-auto h-[45vh] lg:h-full lg:flex-1 relative cursor-grab active:cursor-grabbing bg-gradient-to-b from-white to-gray-200 shrink-0">
 
         {/* Noise Overlay for Background Texture (Concrete/Plaster Effect) */}
         <div className="absolute inset-0 opacity-[0.4] pointer-events-none mix-blend-overlay z-0"
@@ -94,8 +95,9 @@ function App() {
         <Experience config={config} onSnapshotRef={experienceRef} />
       </div>
 
-      {/* Right: Sidebar Interface (Fixed Width) */}
-      <div className="w-[400px] h-full relative z-10">
+      {/* Right: Sidebar Interface */}
+      {/* Mobile: Bottom 55% (flex-1). Desktop: Fixed 400px width on right */}
+      <div className="w-full flex-1 min-h-0 lg:flex-none lg:w-[400px] lg:h-full relative z-10 bg-white border-l shadow-xl">
         <Interface
           config={config}
           setConfig={setConfig}

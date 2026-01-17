@@ -164,7 +164,7 @@ export default function OrderSummary({ isOpen, onClose, onConfirm, data }) {
                   </div>
 
                   {/* Content - Scrollable */}
-                  <div className="p-8 overflow-y-auto custom-scrollbar space-y-8">
+                  <div className="p-6 sm:p-8 overflow-y-auto custom-scrollbar space-y-8">
 
                      {/* 2-Column Grid */}
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
