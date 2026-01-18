@@ -1,64 +1,73 @@
-# B2B 3D Straw Configurator
+# B2B Straw Configurator
 
-An interactive 3D configurator for B2B straw orders, built with React, Three.js, and Tailwind CSS. This application allows users to customize straw specifications, visualize them in real-time, and generate PDF quotes.
+A high-performance, interactive 3D configurator for B2B straw orders, built with **React**, **Three.js**, and **Tailwind CSS**.
 
-## Features
+## ✨ Features
 
-- **Real-time 3D Visualization**: Interactive 3D model that updates instantly with configuration changes.
-- **Dynamic Customization**:
-  - **Sizing**: Length (50mm - 999mm) and Diameter options.
-  - **Appearance**: Custom colors, wrapper types (Paper, Film, Unwrapped).
-  - **Types**: Flexible vs. Straight straws.
-- **Visual Effects**:
-  - Procedural textures for paper and film wrappers.
-  - Realistic lighting, shadows, and materials.
-  - Smooth animations (Levitation, Auto-rotation).
-- **Snapshot Generation**: Capture high-quality images of the configured product.
+- **Interactive 3D Preview**: Real-time rendering of straws with customizable parameters.
+- **Custom "Pour & Sip" Loader**: Delightful SVG animation for a polished loading experience.
+- **Lag-Free Performance**: Smart asset preloading ensures instant configuration switching (`useGLTF.preload`).
+- **Configuration Options**:
+  - **Straw Type**: Straight, Flexible, Extra Flexible.
+  - **End Type**: Standard, Scoop (Spoon), 45 Degree Angle.
+  - **Materials & Colors**: Preset colors or custom hex picker.
+  - **Wrappers**: Unwrapped, Paper Wrapped, Film Wrapped.
+  - **Dimensions**: Custom Length (50mm-999mm) and Diameter.
 - **Order Management**:
-  - MOQ validation logic.
-  - Order Summary Modal.
-  - PDF Quote Generation (Invoice style).
-- **Persistence**: automatically saves your configuration to local storage.
+  - **Real-time Quantity Calculator**: Handles Master Cartons and Inner Boxes logic.
+  - **Visual Order Summary**: Review specs with a generated snapshot of your configured straw.
+  - **PDF Export**: Professional-grade invoice generation with integrated product visualization.
+  - **Session Persistence**: LocalStorage ensures you never lose your work on accidental reload.
+- **Responsive & Polished UI**:
+  - Beautiful, app-like interface with **Framer Motion** animations.
+  - Fully responsive design for Desktop and Mobile.
+  - Optimized interactive states (Hover, Focus, Active).
 
-## Tech Stack
+## 🛠️ Technology Stack
 
-- **Frontend Framework**: React 19 (Vite)
-- **3D Graphics**: Three.js, @react-three/fiber, @react-three/drei
-- **Styling**: Tailwind CSS v4
-- **Animations**: Framer Motion, GSAP
-- **PDF Generation**: jsPDF
+- **Frontend Framework**: React 19
+- **Language**: JavaScript (ES6+)
+- **Build Tool**: Vite
+- **3D Engine**: @react-three/fiber, @react-three/drei, Three.js
+- **Styling**: Tailwind CSS v4, clsx
+- **Animations**: Framer Motion
 - **Icons**: Lucide React
+- **PDF Generation**: jsPDF
 
-## Setup & Installation
+## 🚀 Getting Started
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd straw-configurator
-   ```
+1.  **Install Dependencies**
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 
-3. **Run development server:**
-   ```bash
-   npm run dev
-   ```
+2.  **Start Development Server**
 
-4. **Build for production:**
-   ```bash
-   npm run build
-   ```
+    ```bash
+    npm run dev
+    ```
 
-## Project Structure
+3.  **Build for Production**
+    ```bash
+    npm run build
+    ```
 
-- `src/Experience.jsx`: Main 3D scene setup (Lights, Camera, Controls).
-- `src/StrawModel.jsx`: The 3D straw model component with logic for scaling, materials, and bending.
-- `src/Interface.jsx`: Control panel for user inputs and configuration.
-- `src/OrderSummary.jsx`: Modal component for reviewing orders and exporting PDFs.
-- `src/utils/textureUtils.js`: Procedural texture generation (Paper, Film, Concrete).
+## 📂 Project Structure
+
+```
+src/
+├── components/         # Core application components
+│   ├── Experience.jsx  # 3D Scene setup
+│   ├── Interface.jsx   # UI controls for configuration
+│   ├── Loader.jsx      # Custom loading screen
+│   ├── OrderSummary.jsx# Modal for review and export
+│   └── StrawModel.jsx  # Dynamic 3D straw logic
+├── utils/              # Helper functions (textures, etc.)
+├── App.jsx             # Main application entry
+└── main.jsx            # React root
+```
 
 ---
-*Built for Advanced Configurator Portfolio.*
+
+_Generated for B2B Client Portfolio._
