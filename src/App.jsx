@@ -104,19 +104,83 @@ function App() {
 
       <div className="w-full flex flex-col lg:flex-row bg-white overflow-hidden" style={{ height: '100dvh' }}>
 
-        <div className="w-full lg:w-auto h-[45vh] lg:h-full lg:flex-1 relative cursor-grab active:cursor-grabbing bg-gradient-to-b from-white to-gray-200 shrink-0">
+        <div className="w-full lg:w-auto h-[45vh] lg:h-full lg:flex-1 relative cursor-grab active:cursor-grabbing overflow-hidden shrink-0">
 
-          <div className="absolute inset-0 opacity-[0.4] pointer-events-none mix-blend-overlay z-0"
+          {/* Animated gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-gray-50 to-slate-200">
+            {/* Animated blob 1 - Purple/Pink (Top Left) */}
+            <motion.div
+              className="absolute w-[600px] h-[600px] rounded-full opacity-30 blur-3xl"
+              style={{
+                background: 'radial-gradient(circle, rgba(168,85,247,0.4) 0%, rgba(236,72,153,0.2) 50%, transparent 70%)',
+                left: '-15%',
+                top: '-15%',
+              }}
+              animate={{
+                x: ['-10%', '20%', '-5%', '15%', '-10%'],
+                y: ['-20%', '10%', '25%', '-10%', '-20%'],
+                scale: [1, 1.1, 0.95, 1.05, 1],
+              }}
+              transition={{
+                duration: 25,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            />
+
+            {/* Animated blob 2 - Teal/Cyan */}
+            <motion.div
+              className="absolute w-[500px] h-[500px] rounded-full opacity-25 blur-3xl"
+              style={{
+                background: 'radial-gradient(circle, rgba(6,182,212,0.4) 0%, rgba(34,197,94,0.2) 50%, transparent 70%)',
+                right: '-10%',
+                bottom: '-10%',
+              }}
+              animate={{
+                x: ['10%', '-15%', '5%', '-20%', '10%'],
+                y: ['20%', '-10%', '-15%', '10%', '20%'],
+                scale: [1, 0.9, 1.1, 0.95, 1],
+              }}
+              transition={{
+                duration: 30,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            />
+
+            {/* Animated blob 3 - Blue/Indigo */}
+            <motion.div
+              className="absolute w-[450px] h-[450px] rounded-full opacity-20 blur-3xl"
+              style={{
+                background: 'radial-gradient(circle, rgba(99,102,241,0.4) 0%, rgba(139,92,246,0.2) 50%, transparent 70%)',
+                left: '30%',
+                top: '40%',
+              }}
+              animate={{
+                x: ['0%', '-25%', '20%', '-10%', '0%'],
+                y: ['0%', '20%', '-15%', '25%', '0%'],
+                scale: [1, 1.15, 0.9, 1.1, 1],
+              }}
+              transition={{
+                duration: 35,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            />
+          </div>
+
+          {/* Subtle noise texture overlay */}
+          <div className="absolute inset-0 opacity-[0.3] pointer-events-none mix-blend-overlay z-[1]"
             style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.01' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.7'/%3E%3C/svg%3E")`,
-              filter: 'contrast(120%) brightness(105%)'
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E")`,
+              filter: 'contrast(110%) brightness(105%)'
             }}
           />
 
           <Experience config={config} onSnapshotRef={experienceRef} />
         </div>
 
-        <div className="w-full flex-1 min-h-0 lg:flex-none lg:w-[400px] lg:h-full relative z-10 bg-white border-l shadow-xl">
+        <div className="w-full flex-1 min-h-0 lg:flex-none lg:w-[400px] lg:h-full relative z-10 bg-white shadow-xl">
           <Interface
             config={config}
             setConfig={setConfig}
