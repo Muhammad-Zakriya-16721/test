@@ -156,7 +156,7 @@ const Scene = forwardRef(({ config }, ref) => {
               64
             ]}
           />
-          <meshPhysicalMaterial
+          <meshStandardMaterial
             map={concreteTexture}
             color="#eeeeee"
 
@@ -164,16 +164,14 @@ const Scene = forwardRef(({ config }, ref) => {
             bumpMap={concreteTexture}
             bumpScale={0.02}
 
-            roughness={0.8}
+            roughness={1.0}
             metalness={0.0}
-            clearcoat={0.0}
-            envMapIntensity={1.0}
+            envMapIntensity={0.5}
             side={THREE.DoubleSide}
           />
         </mesh>
 
         <LogoOverlay position={[0, -2.5 + 0.5 + 0.001, 0]} />
-
 
         <ContactShadows
           position={[0, -2.76, 0]}

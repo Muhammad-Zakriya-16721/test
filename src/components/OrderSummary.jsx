@@ -29,17 +29,17 @@ export default function OrderSummary({ isOpen, onClose, onConfirm, data, snapsho
    const handleDownloadPDF = () => {
       const doc = new jsPDF();
 
-      doc.setFillColor(15, 23, 42);
+      doc.setFillColor(241, 245, 249);
       doc.rect(0, 0, 210, 40, 'F');
 
-      doc.setTextColor(255, 255, 255);
+      doc.setTextColor(15, 23, 42);
       doc.setFontSize(22);
       doc.setFont('helvetica', 'bold');
       doc.text("ORDER CONFIGURATION", 20, 22);
 
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(148, 163, 184);
+      doc.setTextColor(100, 116, 139);
       doc.text(`Generated on ${new Date().toLocaleDateString()}`, 20, 32);
 
       let y = 60;
@@ -51,7 +51,32 @@ export default function OrderSummary({ isOpen, onClose, onConfirm, data, snapsho
             doc.setFillColor(255, 255, 255);
             doc.roundedRect(20, 50, 70, 70, 3, 3, 'FD');
 
-            doc.addImage(snapshot, 'PNG', 30, 60, 50, 50);
+            // Calculate proper dimensions to maintain aspect ratio
+            const img = new Image();
+            img.src = snapshot;
+            const imgWidth = img.width || 1;
+            const imgHeight = img.height || 1;
+            const aspectRatio = imgWidth / imgHeight;
+
+            const maxWidth = 50;
+            const maxHeight = 50;
+            let finalWidth, finalHeight;
+
+            if (aspectRatio > 1) {
+               // Wider than tall
+               finalWidth = maxWidth;
+               finalHeight = maxWidth / aspectRatio;
+            } else {
+               // Taller than wide or square
+               finalHeight = maxHeight;
+               finalWidth = maxHeight * aspectRatio;
+            }
+
+            // Center the image within the container
+            const offsetX = 30 + (maxWidth - finalWidth) / 2;
+            const offsetY = 60 + (maxHeight - finalHeight) / 2;
+
+            doc.addImage(snapshot, 'PNG', offsetX, offsetY, finalWidth, finalHeight);
 
             leftColX = 100;
          } catch (e) {
@@ -145,7 +170,7 @@ export default function OrderSummary({ isOpen, onClose, onConfirm, data, snapsho
 
       doc.setFontSize(24);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(37, 99, 235);
+      doc.setTextColor(15, 23, 42);
       doc.text(fmt(totalQty), 190, y, { align: 'right' });
 
       doc.setFontSize(10);
@@ -240,7 +265,7 @@ export default function OrderSummary({ isOpen, onClose, onConfirm, data, snapsho
 
                               <div className="border-t border-gray-200 my-2 pt-2 flex justify-between items-baseline">
                                  <span className="text-sm font-bold text-gray-600">Total Quantity</span>
-                                 <span className="text-2xl font-extrabold text-blue-600">{fmt(totalQty)}</span>
+                                 <span className="text-2xl font-extrabold text-gray-900">{fmt(totalQty)}</span>
                               </div>
                            </div>
                         </div>
@@ -248,30 +273,33 @@ export default function OrderSummary({ isOpen, onClose, onConfirm, data, snapsho
 
                   </div>
 
-                  <div className={`p-6 border-t bg-gray-50 flex flex-col sm:flex-row gap-3 justify-end transition-opacity duration-300 ${isSuccess ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                  <div className={`p-4 sm:p-6 border-t bg-gray-50 flex flex-row gap-2 sm:gap-3 justify-end transition-opacity duration-300 ${isSuccess ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
 
                      <button
                         onClick={onClose}
-                        className="px-6 py-3 rounded-xl border border-gray-300 font-bold text-gray-700 hover:bg-white hover:border-gray-400 transition-all flex items-center justify-center gap-2"
+                        className="px-3 py-2 sm:px-6 sm:py-3 rounded-xl border border-gray-300 font-bold text-gray-700 hover:bg-white hover:border-gray-400 transition-all flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
                      >
-                        <Edit3 size={18} />
-                        Edit Config
+                        <Edit3 size={16} className="sm:w-[18px] sm:h-[18px]" />
+                        <span className="hidden sm:inline">Edit Config</span>
+                        <span className="sm:hidden">Edit</span>
                      </button>
 
                      <button
                         onClick={handleDownloadPDF}
-                        className="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg hover:bg-blue-700 hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-2"
+                        className="px-3 py-2 sm:px-6 sm:py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg hover:bg-blue-700 hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
                      >
-                        <FileDown size={20} />
-                        Download PDF
+                        <FileDown size={16} className="sm:w-5 sm:h-5" />
+                        <span className="hidden sm:inline">Download PDF</span>
+                        <span className="sm:hidden">PDF</span>
                      </button>
 
                      <button
                         onClick={handleConfirmAction}
-                        className="px-6 py-3 rounded-xl bg-green-600 text-white font-bold shadow-lg hover:bg-green-700 hover:shadow-green-500/30 transition-all flex items-center justify-center gap-2"
+                        className="px-3 py-2 sm:px-6 sm:py-3 rounded-xl bg-green-600 text-white font-bold shadow-lg hover:bg-green-700 hover:shadow-green-500/30 transition-all flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
                      >
-                        <Check size={20} />
-                        Confirm & Clear
+                        <Check size={16} className="sm:w-5 sm:h-5" />
+                        <span className="hidden sm:inline">Confirm & Clear</span>
+                        <span className="sm:hidden">Confirm</span>
                      </button>
                   </div>
 

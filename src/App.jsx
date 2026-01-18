@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGLTF } from '@react-three/drei'
 import Experience from './components/Experience'
@@ -83,6 +83,10 @@ function App() {
 
   const totalQty = (config.numMasterCartons || 0) * (config.qtyPerInnerBox || 0) * (config.innerBoxesPerCarton || 0);
 
+  const handleLoaderFinished = useCallback(() => {
+    setIsLoading(false)
+  }, [])
+
   return (
     <>
       <AnimatePresence mode="wait">
@@ -93,7 +97,7 @@ function App() {
             transition={{ duration: 0.5 }}
             className="fixed inset-0 z-[100]"
           >
-            <Loader onFinished={() => setIsLoading(false)} />
+            <Loader onFinished={handleLoaderFinished} />
           </motion.div>
         )}
       </AnimatePresence>
