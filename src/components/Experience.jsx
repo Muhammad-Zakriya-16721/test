@@ -1,11 +1,9 @@
-import { useRef, useImperativeHandle, forwardRef, useMemo, useState, useEffect } from 'react'
+import { useRef, useImperativeHandle, forwardRef, useMemo, useState, useEffect, useCallback } from 'react'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
-import { OrbitControls, Environment, ContactShadows, SoftShadows, useTexture } from '@react-three/drei'
+import { OrbitControls, Environment, ContactShadows, useTexture } from '@react-three/drei'
 import { StrawModel } from './StrawModel'
 import * as THREE from 'three'
 import { generateConcreteTexture } from '../utils/textureUtils'
-
-
 
 function LogoOverlay(props) {
   const texture = useTexture('logo.png')
@@ -33,17 +31,17 @@ const Scene = forwardRef(({ config }, ref) => {
   const strawRef = useRef()
   const controlsRef = useRef()
 
-  const stopRotation = () => {
+  const stopRotation = useCallback(() => {
     setAutoRotate(false)
     if (timerRef.current) clearTimeout(timerRef.current)
-  }
+  }, [])
 
-  const startRestartTimer = () => {
+  const startRestartTimer = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
       setAutoRotate(true)
     }, 2000)
-  }
+  }, [])
 
   useEffect(() => {
     startRestartTimer()
@@ -130,7 +128,7 @@ const Scene = forwardRef(({ config }, ref) => {
             wrapperType={config.wrapperType}
             length={config.length}
             diameter={config.diameter}
-            position={[0, -1, 0]}
+            position={[0, -1.3, 0]}
             scale={[30, 30, 30]}
             rotation={[0.1, Math.PI / 1.5, 0]}
           />
@@ -182,8 +180,6 @@ const Scene = forwardRef(({ config }, ref) => {
           color="#1a1a1a"
         />
       </group>
-
-      <Environment preset="studio" intensity={1.0} blur={0.6} />
 
       <OrbitControls
         ref={controlsRef}

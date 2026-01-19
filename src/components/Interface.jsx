@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, ShoppingCart, AlertCircle, ChevronDown } from 'lucide-react'
 
@@ -20,18 +20,21 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
 
    const MOQLimit = 100000;
    const isbelowMOQ = totalQty < MOQLimit;
-   const isInvalidLength = length < 50 || length > 999;
 
-   const formatNumber = (num) => new Intl.NumberFormat('en-US').format(num);
+   const minLength = 120;
+   const maxLength = 432;
+   const isInvalidLength = length < minLength || length > maxLength;
 
-   const handleAddToQuote = () => {
+   const formatNumber = useCallback((num) => new Intl.NumberFormat('en-US').format(num), []);
+
+   const handleAddToQuote = useCallback(() => {
       if (isbelowMOQ || isInvalidLength) return;
       if (onReviewOrder) onReviewOrder();
-   };
+   }, [isbelowMOQ, isInvalidLength, onReviewOrder]);
 
-   const updateConfig = (key, value) => {
+   const updateConfig = useCallback((key, value) => {
       setConfig(prev => ({ ...prev, [key]: value }));
-   };
+   }, [setConfig]);
 
    return (
       <motion.div
@@ -52,7 +55,7 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={onSnapshot}
-                  className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700"
+                  className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 cursor-pointer"
                   title="Take Snapshot"
                   aria-label="Take Snapshot"
                >
@@ -80,7 +83,7 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
                         whileHover={{ scale: 1.2 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => updateConfig('color', preset.hex)}
-                        className={`h-8 w-8 rounded-full border-2 transition-all ${color.toUpperCase() === preset.hex.toUpperCase()
+                        className={`h-8 w-8 rounded-full border-2 transition-all cursor-pointer ${color.toUpperCase() === preset.hex.toUpperCase()
                            ? 'border-black shadow-md ring-2 ring-offset-2 ring-gray-200'
                            : 'border-transparent shadow-sm'
                            }`}
@@ -124,7 +127,7 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
                            whileTap={!isDisabled ? { scale: 0.98 } : {}}
                            disabled={isDisabled}
                            onClick={() => updateConfig('strawType', type)}
-                           className={`py-2 px-4 rounded-lg text-sm font-medium transition-all ${strawType === type
+                           className={`py-2 px-4 rounded-lg text-sm font-medium transition-all cursor-pointer ${strawType === type
                               ? 'bg-black text-white shadow-lg'
                               : isDisabled
                                  ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
@@ -208,7 +211,7 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => updateConfig('wrapperType', wType)}
-                        className={`flex-1 py-2 px-1 rounded-lg text-xs font-bold border transition-all ${config.wrapperType === wType
+                        className={`flex-1 py-2 px-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${config.wrapperType === wType
                            ? 'border-black bg-white text-black shadow-sm ring-1 ring-black'
                            : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
                            }`}
@@ -226,8 +229,8 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
                      id="straw-length"
                      name="straw-length"
                      type="number"
-                     min="50"
-                     max="999"
+                     min={minLength}
+                     max={maxLength}
                      value={length}
                      onChange={(e) => {
                         const val = e.target.value;
@@ -237,7 +240,7 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
                   />
                   {isInvalidLength && (
                      <p className="text-[10px] font-bold text-red-500 uppercase tracking-tight flex items-center gap-1">
-                        <AlertCircle size={10} /> 50mm - 999mm Required
+                        <AlertCircle size={10} /> {minLength}mm - {maxLength}mm Required
                      </p>
                   )}
                </div>
@@ -251,7 +254,7 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
                            whileHover={{ scale: 1.05 }}
                            whileTap={{ scale: 0.95 }}
                            onClick={() => updateConfig('diameter', d)}
-                           className={`flex-1 py-2 rounded border text-xs font-bold transition-colors ${diameter === d
+                           className={`flex-1 py-2 rounded border text-xs font-bold transition-colors cursor-pointer ${diameter === d
                               ? 'border-black bg-white text-black ring-1 ring-black'
                               : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                               }`}
@@ -361,7 +364,7 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
                aria-label="Add to Quote"
                className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-bold text-lg transition-all ${isbelowMOQ || isInvalidLength
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-black text-white shadow-xl hover:bg-gray-900'
+                  : 'bg-black text-white shadow-xl hover:bg-gray-900 cursor-pointer'
                   }`}
             >
                <ShoppingCart size={20} />

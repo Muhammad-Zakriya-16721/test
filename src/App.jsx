@@ -8,6 +8,19 @@ import Loader from './components/Loader'
 
 const STORAGE_KEY = 'straw_config_data'
 
+const DEFAULT_CONFIG = {
+  color: '#FF0000',
+  strawType: 'Straight',
+  endType: 'Standard',
+  length: 200,
+  diameter: '12',
+  wrapperType: 'Unwrapped',
+  comments: '',
+  numMasterCartons: '',
+  qtyPerInnerBox: '',
+  innerBoxesPerCarton: ''
+}
+
 useGLTF.preload('/straw.glb')
 useGLTF.preload('/All-Straws.glb')
 
@@ -25,18 +38,7 @@ function App() {
         console.error("Error loading saved config", e)
       }
     }
-    return {
-      color: '#FF0000',
-      strawType: 'Straight',
-      endType: 'Standard',
-      length: 300,
-      diameter: '12',
-      wrapperType: 'Unwrapped',
-      comments: '',
-      numMasterCartons: '',
-      qtyPerInnerBox: '',
-      innerBoxesPerCarton: ''
-    }
+    return DEFAULT_CONFIG
   })
 
   useEffect(() => {
@@ -45,41 +47,29 @@ function App() {
 
   const experienceRef = useRef()
 
-  const handleSnapshot = () => {
+  const handleSnapshot = useCallback(() => {
     if (experienceRef.current) {
       experienceRef.current.takeSnapshot()
     }
-  }
+  }, [])
 
-  const handleReviewOrder = () => {
+  const handleReviewOrder = useCallback(() => {
     if (experienceRef.current?.getSnapshot) {
       setSnapshotUrl(experienceRef.current.getSnapshot())
     }
     setShowSummary(true)
-  }
+  }, [])
 
-  const handleCloseSummary = () => {
+  const handleCloseSummary = useCallback(() => {
     setShowSummary(false)
-  }
+  }, [])
 
-  const handleConfirmOrder = () => {
-    const defaults = {
-      color: '#FF0000',
-      strawType: 'Straight',
-      endType: 'Standard',
-      length: 300,
-      diameter: '12',
-      wrapperType: 'Unwrapped',
-      comments: '',
-      numMasterCartons: '',
-      qtyPerInnerBox: '',
-      innerBoxesPerCarton: ''
-    }
-    setConfig(defaults)
+  const handleConfirmOrder = useCallback(() => {
+    setConfig(DEFAULT_CONFIG)
     localStorage.removeItem(STORAGE_KEY)
     setShowSummary(false)
     setSnapshotUrl(null)
-  }
+  }, [])
 
   const totalQty = (config.numMasterCartons || 0) * (config.qtyPerInnerBox || 0) * (config.innerBoxesPerCarton || 0);
 
@@ -106,9 +96,7 @@ function App() {
 
         <div className="w-full lg:w-auto h-[45vh] lg:h-full lg:flex-1 relative cursor-grab active:cursor-grabbing overflow-hidden shrink-0">
 
-          {/* Animated gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-gray-50 to-slate-200">
-            {/* Animated blob 1 - Purple/Pink (Top Left) */}
             <motion.div
               className="absolute w-[600px] h-[600px] rounded-full opacity-30 blur-3xl"
               style={{
@@ -128,7 +116,6 @@ function App() {
               }}
             />
 
-            {/* Animated blob 2 - Teal/Cyan */}
             <motion.div
               className="absolute w-[500px] h-[500px] rounded-full opacity-25 blur-3xl"
               style={{
@@ -148,7 +135,6 @@ function App() {
               }}
             />
 
-            {/* Animated blob 3 - Blue/Indigo */}
             <motion.div
               className="absolute w-[450px] h-[450px] rounded-full opacity-20 blur-3xl"
               style={{
@@ -169,7 +155,6 @@ function App() {
             />
           </div>
 
-          {/* Subtle noise texture overlay */}
           <div className="absolute inset-0 opacity-[0.3] pointer-events-none mix-blend-overlay z-[1]"
             style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E")`,

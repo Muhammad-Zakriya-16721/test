@@ -16,8 +16,9 @@ export function StrawModel({
    const { nodes: allStrawNodes, materials: allStrawMaterials } = useGLTF("/All-Straws.glb");
 
    const lengthScale = useMemo(() => {
-      const clampedLength = Math.max(200, Math.min(400, length || 300));
-      return 0.8 + ((clampedLength - 200) / 200) * 0.4;
+      const visualLength = (length || 200) + 60;
+      const clampedLength = Math.max(120, Math.min(300, visualLength));
+      return 0.4 + (clampedLength * 0.002);
    }, [length]);
 
    const paperMap = useMemo(() => generatePaperTexture(), []);
