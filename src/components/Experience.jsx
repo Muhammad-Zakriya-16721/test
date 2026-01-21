@@ -200,7 +200,7 @@ const Scene = forwardRef(({ config }, ref) => {
   )
 })
 
-export default function Experience({ config, onSnapshotRef }) {
+export default function Experience({ config, onSnapshotRef, onContextLost }) {
   return (
     <Canvas
       shadows
@@ -211,6 +211,13 @@ export default function Experience({ config, onSnapshotRef }) {
         toneMapping: THREE.ACESFilmicToneMapping,
         outputColorSpace: THREE.SRGBColorSpace,
         alpha: true
+      }}
+      onCreated={({ gl }) => {
+        gl.domElement.addEventListener('webglcontextlost', (event) => {
+          event.preventDefault()
+          console.warn('WebGL Context Lost')
+          if (onContextLost) onContextLost()
+        }, false)
       }}
     >
       <Scene config={config} ref={onSnapshotRef} />

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect, useCallback, startTransition } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGLTF } from '@react-three/drei'
 import Experience from './components/Experience'
@@ -28,6 +28,7 @@ function App() {
   const [showSummary, setShowSummary] = useState(false)
   const [snapshotUrl, setSnapshotUrl] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isContextLost, setIsContextLost] = useState(false)
 
   const [config, setConfig] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -49,15 +50,30 @@ function App() {
 
   const handleSnapshot = useCallback(() => {
     if (experienceRef.current) {
+      // The actual snapshot logic is inside Experience but this trigger might be unused if we rely on handleReviewOrder
       experienceRef.current.takeSnapshot()
     }
   }, [])
 
   const handleReviewOrder = useCallback(() => {
-    if (experienceRef.current?.getSnapshot) {
-      setSnapshotUrl(experienceRef.current.getSnapshot())
-    }
-    setShowSummary(true)
+    // Defer the heavy snapshot and state update to the next frame to avoid blocking synchronous events
+    requestAnimationFrame(() => {
+      // Ensure we are not attempting to run this during a render phase
+      if (experienceRef.current?.getSnapshot) {
+        const url = experienceRef.current.getSnapshot()
+
+        // Wrap state updates in startTransition to handle potential component suspension gracefully (React Error #310)
+        startTransition(() => {
+          setSnapshotUrl(url)
+          setShowSummary(true)
+        })
+      } else {
+        // Fallback if snapshot fails or ref is missing (e.g. context lost)
+        startTransition(() => {
+          setShowSummary(true)
+        })
+      }
+    })
   }, [])
 
   const handleCloseSummary = useCallback(() => {
@@ -69,6 +85,10 @@ function App() {
     localStorage.removeItem(STORAGE_KEY)
     setShowSummary(false)
     setSnapshotUrl(null)
+  }, [])
+
+  const handleContextLost = useCallback(() => {
+    setIsContextLost(true)
   }, [])
 
   const totalQty = (config.numMasterCartons || 0) * (config.qtyPerInnerBox || 0) * (config.innerBoxesPerCarton || 0);
@@ -162,7 +182,11 @@ function App() {
             }}
           />
 
-          <Experience config={config} onSnapshotRef={experienceRef} />
+          <Experience
+            config={config}
+            onSnapshotRef={experienceRef}
+            onContextLost={handleContextLost}
+          />
         </div>
 
         <div className="w-full flex-1 min-h-0 lg:flex-none lg:w-[400px] lg:h-full relative z-10 bg-white shadow-xl">
@@ -171,6 +195,7 @@ function App() {
             setConfig={setConfig}
             onSnapshot={handleSnapshot}
             onReviewOrder={handleReviewOrder}
+            isContextLost={isContextLost}
           />
         </div>
 

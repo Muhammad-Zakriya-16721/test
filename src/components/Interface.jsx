@@ -2,8 +2,7 @@ import React, { useMemo, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, ShoppingCart, AlertCircle, ChevronDown } from 'lucide-react'
 
-export default function Interface({ config, setConfig, onSnapshot, onReviewOrder }) {
-
+export default function Interface({ config, setConfig, onSnapshot, onReviewOrder, isContextLost }) {
    const {
       color, strawType, endType, length, diameter,
       numMasterCartons, qtyPerInnerBox, innerBoxesPerCarton
@@ -28,9 +27,9 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
    const formatNumber = useCallback((num) => new Intl.NumberFormat('en-US').format(num), []);
 
    const handleAddToQuote = useCallback(() => {
-      if (isbelowMOQ || isInvalidLength) return;
+      if (isbelowMOQ || isInvalidLength || isContextLost) return;
       if (onReviewOrder) onReviewOrder();
-   }, [isbelowMOQ, isInvalidLength, onReviewOrder]);
+   }, [isbelowMOQ, isInvalidLength, onReviewOrder, isContextLost]);
 
    const updateConfig = useCallback((key, value) => {
       setConfig(prev => ({ ...prev, [key]: value }));
@@ -52,11 +51,12 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
                   <p className="text-sm text-gray-500">Customize your bulk order</p>
                </div>
                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={!isContextLost ? { scale: 1.1 } : {}}
+                  whileTap={!isContextLost ? { scale: 0.9 } : {}}
                   onClick={onSnapshot}
-                  className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-700 cursor-pointer"
-                  title="Take Snapshot"
+                  disabled={isContextLost}
+                  className={`p-2 rounded-full transition-colors ${isContextLost ? 'bg-red-100 text-red-500 cursor-not-allowed' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 cursor-pointer'}`}
+                  title={isContextLost ? "Graphics Context Lost" : "Take Snapshot"}
                   aria-label="Take Snapshot"
                >
                   <Camera size={20} />
@@ -357,18 +357,18 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
 
          <div className="p-6 border-t bg-gray-50">
             <motion.button
-               whileHover={!(isbelowMOQ || isInvalidLength) ? { scale: 1.02 } : {}}
-               whileTap={!(isbelowMOQ || isInvalidLength) ? { scale: 0.98 } : {}}
+               whileHover={!(isbelowMOQ || isInvalidLength || isContextLost) ? { scale: 1.02 } : {}}
+               whileTap={!(isbelowMOQ || isInvalidLength || isContextLost) ? { scale: 0.98 } : {}}
                onClick={handleAddToQuote}
-               disabled={isbelowMOQ || isInvalidLength}
+               disabled={isbelowMOQ || isInvalidLength || isContextLost}
                aria-label="Add to Quote"
-               className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-bold text-lg transition-all ${isbelowMOQ || isInvalidLength
+               className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-bold text-lg transition-all ${isbelowMOQ || isInvalidLength || isContextLost
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-black text-white shadow-xl hover:bg-gray-900 cursor-pointer'
                   }`}
             >
                <ShoppingCart size={20} />
-               Add to Quote
+               {isContextLost ? "Graphics Error - Refresh Page" : "Add to Quote"}
             </motion.button>
          </div>
 
