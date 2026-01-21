@@ -69,42 +69,42 @@ const Scene = forwardRef(({ config }, ref) => {
     }
   })
 
-  useImperativeHandle(ref, () => {
-    const getSnapshot = () => {
-      if (!controlsRef.current) return null
+  useImperativeHandle(ref, () => ({
+    captureSnapshot: async () => {
+      // 1. Wait for double rAF to ensure latest frame
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
 
-      const oldPos = camera.position.clone()
-      const oldRot = camera.rotation.clone()
-      const oldStrawY = strawRef.current ? strawRef.current.position.y : 0
+      // 2. Capture
+      if (!controlsRef.current || !strawRef.current) return null
 
-      controlsRef.current.reset()
-      if (strawRef.current) strawRef.current.position.y = 0
-      controlsRef.current.update()
+      try {
+        const oldPos = camera.position.clone()
+        const oldRot = camera.rotation.clone()
+        const oldStrawY = strawRef.current.position.y
 
-      gl.render(scene, camera)
-      const dataUrl = gl.domElement.toDataURL('image/png')
+        controlsRef.current.reset()
+        strawRef.current.position.y = 0
+        controlsRef.current.update()
 
-      camera.position.copy(oldPos)
-      camera.rotation.copy(oldRot)
-      if (strawRef.current) strawRef.current.position.y = oldStrawY
-      controlsRef.current.update()
+        gl.render(scene, camera)
+        // Reduce quality slightly to 0.9 to save memory
+        const dataUrl = gl.domElement.toDataURL('image/png', 0.9)
 
-      return dataUrl
-    }
+        camera.position.copy(oldPos)
+        camera.rotation.copy(oldRot)
+        strawRef.current.position.y = oldStrawY
+        controlsRef.current.update()
 
-    return {
-      getSnapshot,
-      takeSnapshot: () => {
-        const dataUrl = getSnapshot()
-        if (dataUrl) {
-          const link = document.createElement('a')
-          link.setAttribute('download', 'straw-design.png')
-          link.setAttribute('href', dataUrl)
-          link.click()
-        }
+        return dataUrl
+      } catch (e) {
+        console.warn('Snapshot failed:', e)
+        return null
       }
+    },
+    takeSnapshot: async () => {
+      // Legacy method kept if needed
     }
-  })
+  }))
 
   return (
     <>
@@ -213,11 +213,12 @@ export default function Experience({ config, onSnapshotRef, onContextLost }) {
         alpha: true
       }}
       onCreated={({ gl }) => {
-        gl.domElement.addEventListener('webglcontextlost', (event) => {
+        const handleContextLost = (event) => {
           event.preventDefault()
           console.warn('WebGL Context Lost')
           if (onContextLost) onContextLost()
-        }, false)
+        }
+        gl.domElement.addEventListener('webglcontextlost', handleContextLost, false)
       }}
     >
       <Scene config={config} ref={onSnapshotRef} />

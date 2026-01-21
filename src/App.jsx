@@ -28,6 +28,7 @@ function App() {
   const [showSummary, setShowSummary] = useState(false)
   const [snapshotUrl, setSnapshotUrl] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isProcessing, setIsProcessing] = useState(false)
   const [isContextLost, setIsContextLost] = useState(false)
 
   const [config, setConfig] = useState(() => {
@@ -55,26 +56,33 @@ function App() {
     }
   }, [])
 
-  const handleReviewOrder = useCallback(() => {
-    // Defer the heavy snapshot and state update to the next frame to avoid blocking synchronous events
-    requestAnimationFrame(() => {
-      // Ensure we are not attempting to run this during a render phase
-      if (experienceRef.current?.getSnapshot) {
-        const url = experienceRef.current.getSnapshot()
+  const handleReviewOrder = useCallback(async () => {
+    if (isProcessing) return
+    setIsProcessing(true)
 
-        // Wrap state updates in startTransition to handle potential component suspension gracefully (React Error #310)
-        startTransition(() => {
-          setSnapshotUrl(url)
-          setShowSummary(true)
-        })
-      } else {
-        // Fallback if snapshot fails or ref is missing (e.g. context lost)
-        startTransition(() => {
-          setShowSummary(true)
-        })
+    let url = null
+
+    // 1. Try to capture snapshot
+    if (!isContextLost && experienceRef.current?.captureSnapshot) {
+      try {
+        // Race condition: 500ms timeout vs snapshot
+        const snapshotPromise = experienceRef.current.captureSnapshot()
+        const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 500))
+
+        url = await Promise.race([snapshotPromise, timeoutPromise])
+        if (!url) console.warn('Snapshot timed out or failed, proceeding without it.')
+      } catch (e) {
+        console.warn('Snapshot error:', e)
       }
+    }
+
+    // 2. Update state safely
+    startTransition(() => {
+      setSnapshotUrl(url)
+      setShowSummary(true)
+      setIsProcessing(false)
     })
-  }, [])
+  }, [isProcessing, isContextLost])
 
   const handleCloseSummary = useCallback(() => {
     setShowSummary(false)
@@ -196,6 +204,7 @@ function App() {
             onSnapshot={handleSnapshot}
             onReviewOrder={handleReviewOrder}
             isContextLost={isContextLost}
+            isProcessing={isProcessing}
           />
         </div>
 

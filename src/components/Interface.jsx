@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, ShoppingCart, AlertCircle, ChevronDown } from 'lucide-react'
 
-export default function Interface({ config, setConfig, onSnapshot, onReviewOrder, isContextLost }) {
+export default function Interface({ config, setConfig, onSnapshot, onReviewOrder, isContextLost, isProcessing }) {
    const {
       color, strawType, endType, length, diameter,
       numMasterCartons, qtyPerInnerBox, innerBoxesPerCarton
@@ -27,9 +27,9 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
    const formatNumber = useCallback((num) => new Intl.NumberFormat('en-US').format(num), []);
 
    const handleAddToQuote = useCallback(() => {
-      if (isbelowMOQ || isInvalidLength || isContextLost) return;
+      if (isbelowMOQ || isInvalidLength || isProcessing) return;
       if (onReviewOrder) onReviewOrder();
-   }, [isbelowMOQ, isInvalidLength, onReviewOrder, isContextLost]);
+   }, [isbelowMOQ, isInvalidLength, onReviewOrder, isProcessing]);
 
    const updateConfig = useCallback((key, value) => {
       setConfig(prev => ({ ...prev, [key]: value }));
@@ -357,18 +357,27 @@ export default function Interface({ config, setConfig, onSnapshot, onReviewOrder
 
          <div className="p-6 border-t bg-gray-50">
             <motion.button
-               whileHover={!(isbelowMOQ || isInvalidLength || isContextLost) ? { scale: 1.02 } : {}}
-               whileTap={!(isbelowMOQ || isInvalidLength || isContextLost) ? { scale: 0.98 } : {}}
+               whileHover={!(isbelowMOQ || isInvalidLength || isProcessing) ? { scale: 1.02 } : {}}
+               whileTap={!(isbelowMOQ || isInvalidLength || isProcessing) ? { scale: 0.98 } : {}}
                onClick={handleAddToQuote}
-               disabled={isbelowMOQ || isInvalidLength || isContextLost}
+               disabled={isbelowMOQ || isInvalidLength || isProcessing}
                aria-label="Add to Quote"
-               className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-bold text-lg transition-all ${isbelowMOQ || isInvalidLength || isContextLost
+               className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-bold text-lg transition-all ${isbelowMOQ || isInvalidLength || isProcessing
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-black text-white shadow-xl hover:bg-gray-900 cursor-pointer'
                   }`}
             >
-               <ShoppingCart size={20} />
-               {isContextLost ? "Graphics Error - Refresh Page" : "Add to Quote"}
+               {isProcessing ? (
+                  <>
+                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                     Processing...
+                  </>
+               ) : (
+                  <>
+                     <ShoppingCart size={20} />
+                     {isContextLost ? "Add to Quote (Text Only)" : "Add to Quote"}
+                  </>
+               )}
             </motion.button>
          </div>
 
