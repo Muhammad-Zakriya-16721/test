@@ -10,13 +10,6 @@ export default function OrderSummary({ isOpen, onClose, onConfirm, data, snapsho
       if (isOpen) setIsSuccess(false);
    }, [isOpen]);
 
-   if (!isOpen || !data) return null;
-
-   const {
-      color, strawType, endType, length, diameter, wrapperType,
-      numMasterCartons, qtyPerInnerBox, innerBoxesPerCarton, totalQty, comments
-   } = data;
-
    const fmt = useCallback((n) => new Intl.NumberFormat('en-US').format(n), []);
 
    const handleConfirmAction = useCallback(() => {
@@ -25,6 +18,13 @@ export default function OrderSummary({ isOpen, onClose, onConfirm, data, snapsho
          onConfirm();
       }, 2000);
    }, [onConfirm]);
+
+   if (!isOpen || !data) return null;
+
+   const {
+      color, strawType, endType, length, diameter, wrapperType,
+      numMasterCartons, qtyPerInnerBox, innerBoxesPerCarton, totalQty, comments
+   } = data;
 
    const handleDownloadPDF = () => {
       const doc = new jsPDF();
