@@ -1,3 +1,5 @@
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Click%20Here-brightgreen)](https://test-2-alpha-three.vercel.app/)
+
 # B2B Straw Configurator
 
 A high-performance, interactive 3D configurator for B2B straw orders, built with **React**, **Three.js**, and **Tailwind CSS**.
